@@ -59,7 +59,7 @@ Implement an AI-based on an external API
 
 
 ---------------------------------------------------------------
-# Scratches & Evolution
+# Sketches & Evolution
 
  <p float="left">
    <img width="200" height="200" src='https://github.com/AfonsoCFonseca/Chess-Game/blob/main/screenshots/24_12_20.png' >

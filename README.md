@@ -7,6 +7,20 @@ A classic chess game using phaser and TypeScript
 
 
 ---------------------------------------------------------------
+# How to Deploy
+On the project terminal run: 
+```
+npm i;
+npm run build;
+node index
+```
+then access on your browser to: localhost:8080
+
+To access a live version running on a server ( the server may take a few seconds to boot, before starting the game )
+
+-> https://chess1991.onrender.com/ <-
+( also, it's a slow server )
+
 # Structure
 
 The Game is Based in 3 main pillars, the Board class, the Player/Enemy class and all the Pieces class

@@ -13,6 +13,8 @@ import { PiecesColors, PiecesType, TilePositionInterface } from '../game.interfa
 import {
     player, enemy, debugText, gameHistory
 } from '../App';
+import { ChessEngine } from '../ChessEngine';
+import { BoardAdapter } from '../BoardAdapter';
 
 export default class Board {
     public pieces: Piece[][] = [[]];
@@ -24,6 +26,7 @@ export default class Board {
     public previousPossibleMoves: Tile[] = null;
 
     public selectedPiece: Piece = null;
+    public chessEngine: ChessEngine;
 
     public pieceMap = [
         ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
@@ -37,6 +40,7 @@ export default class Board {
     ];
 
     constructor() {
+        this.chessEngine = new ChessEngine();
         this.drawBoard();
     }
 
@@ -119,6 +123,14 @@ export default class Board {
     }
 
     public updateMap(previousTile: TilePositionInterface, newPos: TilePositionInterface, piece: Piece) {
+        const fromSquare = BoardAdapter.coordinateToSquare(previousTile.tileX, previousTile.tileY);
+        const toSquare = BoardAdapter.coordinateToSquare(newPos.tileX, newPos.tileY);
+        
+        const move = this.chessEngine.makeMove(fromSquare, toSquare);
+        if (!move) {
+            return;
+        }
+
         const { tileX, tileY } = previousTile;
         this.pieces[tileY][tileX] = null;
         this.pieceMap[tileY][tileX] = '  ';
@@ -130,6 +142,7 @@ export default class Board {
         this.pieces[newPos.tileY][newPos.tileX] = piece;
         this.pieceMap[newPos.tileY][newPos.tileX] = `${player.isMyTurn() ? 'w' : 'b'}${piece.type}`;
 
+        this.syncWithChessEngine();
         debugText.setText(this.pieceMap);
         gameHistory.saveInteraction(this.pieceMap);
     }
@@ -181,6 +194,39 @@ export default class Board {
         return (tileMapValue === null || tileMapValue === '  ' || utils.getColorByName(tileMapValue) === color);
     }
 
+    public isValidMove(fromTile: TilePositionInterface, toTile: TilePositionInterface): boolean {
+        const fromSquare = BoardAdapter.coordinateToSquare(fromTile.tileX, fromTile.tileY);
+        const toSquare = BoardAdapter.coordinateToSquare(toTile.tileX, toTile.tileY);
+        return this.chessEngine.isValidMove(fromSquare, toSquare);
+    }
+
+    public getPossibleMovesForPiece(tilePos: TilePositionInterface): string[] {
+        const square = BoardAdapter.coordinateToSquare(tilePos.tileX, tilePos.tileY);
+        return this.chessEngine.getPossibleMoves(square);
+    }
+
+    public isInCheck(): boolean {
+        return this.chessEngine.isCheck();
+    }
+
+    public isCheckmate(): boolean {
+        return this.chessEngine.isCheckmate();
+    }
+
+    public isStalemate(): boolean {
+        return this.chessEngine.isStalemate();
+    }
+
+    public isGameOver(): boolean {
+        return this.chessEngine.isGameOver();
+    }
+
+    private syncWithChessEngine(): void {
+        const currentTurn = player.isMyTurn() ? 'w' : 'b';
+        const fen = BoardAdapter.buildFullFen(this.pieceMap, currentTurn);
+        this.chessEngine.loadFen(fen);
+    }
+
     public clearPreviousPossibleMoves(newPossibleMoves: Tile[]) {
         if (this.currentPossibleMoves) {
             this.previousPossibleMoves = this.currentPossibleMoves;
@@ -197,8 +243,11 @@ export default class Board {
     }
 
     public undo() {
-        const currentBoard = gameHistory.getPreviousInteraction();
-        this.updateDrawMap(currentBoard);
+        const move = this.chessEngine.undoMove();
+        if (move) {
+            const currentBoard = gameHistory.getPreviousInteraction();
+            this.updateDrawMap(currentBoard);
+        }
     }
 
     public redo() {

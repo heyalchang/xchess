@@ -14,10 +14,8 @@ export default class Rook extends Piece {
     }
 
     public showPossibleMoves(isKingCheck?): Tile[] {
-        const possibleY = this.getMoves('y', 'left-up').concat(this.getMoves('y', 'right-down'));
-        const possibleX = this.getMoves('x', 'right-down').concat(this.getMoves('x', 'left-up'));
-        const finalPossibleTiles = possibleX.concat(possibleY);
-        return super.showPossibleMoves(finalPossibleTiles, isKingCheck);
+        // chess.js validation is now handled in the base class
+        return super.showPossibleMoves([], isKingCheck);
     }
 
     private getMoves(axis: string, dir: string): Tile[] {

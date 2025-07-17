@@ -12,10 +12,8 @@ export default class Bishop extends Piece {
     }
 
     public showPossibleMoves(isKingCheck?): Tile[] {
-        const finalLeftPossibleTiles = this.getMoves('left', 'up').concat(this.getMoves('left', 'down'));
-        const finalRightPossibleTiles = this.getMoves('right', 'up').concat(this.getMoves('right', 'down'));
-        const finalPossibleTiles = finalLeftPossibleTiles.concat(finalRightPossibleTiles);
-        return super.showPossibleMoves(finalPossibleTiles, isKingCheck);
+        // chess.js validation is now handled in the base class
+        return super.showPossibleMoves([], isKingCheck);
     }
 
     private getMoves(side: string, direction: string): Tile[] {

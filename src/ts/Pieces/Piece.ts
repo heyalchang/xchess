@@ -9,6 +9,7 @@ import {
     PieceInterface, TilePositionInterface, PiecesColors, PiecesType, PositionInterface
 } from '../game.interfaces';
 import * as utils from '../Utils/utils';
+import { BoardAdapter } from '../BoardAdapter';
 
 export default class Piece extends Phaser.GameObjects.Sprite implements PieceInterface {
     protected currentTile: TilePositionInterface;
@@ -37,22 +38,34 @@ export default class Piece extends Phaser.GameObjects.Sprite implements PieceInt
 
     // eslint-disable-next-line class-methods-use-this
     public showPossibleMoves(tiles: Tile[] | void, isKingCheck:boolean = true): Tile[] {
-        if (player.isMyTurn() && isKingCheck) { //Drawer
+        if (player.isMyTurn() && isKingCheck) {
             board.clearPreviousPossibleMoves(tiles as Tile[]);
-            board.currentPossibleMoves = isCheck(board.currentPossibleMoves);
-            board.currentPossibleMoves.forEach((tile, index, object) => {
-                if (tile) {
-                    if (board.isTileFree(tile)) {
-                        tile.setAsPossibleMove(); 
-                    } else object.splice(index, 1);
+            
+            // Use chess.js validation instead of custom check logic
+            const validTiles: Tile[] = [];
+            const possibleMoves = board.getPossibleMovesForPiece(this.currentTile);
+            
+            possibleMoves.forEach(moveSquare => {
+                const coord = BoardAdapter.squareToCoordinate(moveSquare);
+                const tile = board.getTiles(coord) as Tile;
+                if (tile && board.isTileFree(tile)) {
+                    validTiles.push(tile);
+                    tile.setAsPossibleMove();
                 }
             });
+            
+            board.currentPossibleMoves = validTiles;
         }
 
         return tiles as Tile[];
     }
 
     public async to(newTile: Tile) {
+        // Validate move with chess.js before executing
+        if (!board.isValidMove(this.currentTile, newTile.tilePosition)) {
+            return;
+        }
+        
         this.firstTurn = false;
         const previousTile = this.currentTile;
         this.currentTile = newTile.tilePosition;

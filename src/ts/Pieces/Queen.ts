@@ -13,16 +13,8 @@ export default class Queen extends Piece {
     }
 
     public showPossibleMoves(isKingCheck?): Tile[] {
-        const finalLeftPossibleTiles = this.getDiagonalMoves('left', 'up').concat(this.getDiagonalMoves('left', 'down'));
-        const finalRightPossibleTiles = this.getDiagonalMoves('right', 'up').concat(this.getDiagonalMoves('right', 'down'));
-        const finalPossibleTilesDiagonal = finalLeftPossibleTiles.concat(finalRightPossibleTiles);
-
-        const possibleY = this.getSideMoves('y', 'left-up').concat(this.getSideMoves('y', 'right-down'));
-        const possibleX = this.getSideMoves('x', 'right-down').concat(this.getSideMoves('x', 'left-up'));
-        const finalPossibleTilesSide = possibleX.concat(possibleY);
-
-        const finalPossibleTiles = finalPossibleTilesSide.concat(finalPossibleTilesDiagonal);
-        return super.showPossibleMoves(finalPossibleTiles, isKingCheck);
+        // chess.js validation is now handled in the base class
+        return super.showPossibleMoves([], isKingCheck);
     }
 
     private getDiagonalMoves(side: string, direction: string): Tile[] {

@@ -12,10 +12,8 @@ export default class Knight extends Piece {
     }
 
     public showPossibleMoves(isKingCheck?): Tile[] {
-        const possibleLeft = this.getMoves('left');
-        const possibleRight = this.getMoves('right');
-        const finalPossibleTiles = possibleLeft.concat(possibleRight);
-        return super.showPossibleMoves(finalPossibleTiles, isKingCheck);
+        // chess.js validation is now handled in the base class
+        return super.showPossibleMoves([], isKingCheck);
     }
 
     private getMoves( type: 'left'|'right'): Tile[] {

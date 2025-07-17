@@ -12,13 +12,8 @@ export default class Pawn extends Piece {
     }
 
     public showPossibleMoves(isKingCheck?): Tile[] {
-        let possibleTiles: Tile[] = [];
-
-        possibleTiles = this.frontMoves(this.currentTile);
-        const diagonalPossibleTiles = this.diagonalMoves(this.currentTile);
-        const finalPossibleTiles = possibleTiles.concat(diagonalPossibleTiles);
-
-        return super.showPossibleMoves(finalPossibleTiles, isKingCheck);
+        // chess.js validation is now handled in the base class
+        return super.showPossibleMoves([], isKingCheck);
     }
 
     private frontMoves({ tileX, tileY }): Tile[] {

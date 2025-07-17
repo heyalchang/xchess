@@ -5,6 +5,8 @@ import Enemy from './Enemy';
 import Player from './Player';
 import * as consts from './Utils/consts';
 import drawUi from './UI/ui';
+import { VoiceBridge } from './voice/VoiceBridge';
+import { GameBus } from './Utils/GameBus';
 
 export let scene
 export let board: Board;
@@ -12,6 +14,7 @@ export let player: Player;
 export let enemy: Enemy;
 export let gameHistory: GameHistory;
 export let checkText;
+export let voiceBridge: VoiceBridge;
 
 let debugGraphics;
 let keyRdy: boolean = true;
@@ -68,6 +71,7 @@ export class GameScene extends Phaser.Scene {
     create() {
         this.setKeys();
         this.newGame();
+        this.initializeVoice();
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -78,6 +82,23 @@ export class GameScene extends Phaser.Scene {
         enemy = new Enemy();
         board = new Board();
         gameHistory = new GameHistory(board.pieceMap);
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    async initializeVoice() {
+        try {
+            const gameBus = GameBus.getInstance();
+            voiceBridge = new VoiceBridge(this, gameBus);
+            
+            const success = await voiceBridge.initialize();
+            if (success) {
+                console.log('Voice system initialized successfully');
+            } else {
+                console.log('Voice system initialization failed or unavailable');
+            }
+        } catch (error) {
+            console.error('Error initializing voice system:', error);
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this

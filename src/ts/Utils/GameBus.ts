@@ -1,7 +1,18 @@
 export interface Phase1Events {
-  'move': { san: string; fen: string; from: string; to: string; };
+  'move': { san: string; fen: string; from: string; to: string; source?: string; originalTranscript?: string; confidence?: number; };
   'turn': { player: 'white' | 'black' };
-  'state': { fen: string; turn: string; moveCount: number; inCheck: boolean; gameOver: boolean; };
+  'state': { fen: string; turn: string; moveCount: number; inCheck: boolean; gameOver: boolean; legalMoves?: string[]; lastMove?: string; };
+  'check': {};
+  'checkmate': { winner: 'white' | 'black' };
+  'stalemate': {};
+  'voice:start': {};
+  'voice:start-request': {};
+  'voice:stop-request': {};
+  'voice:transcript': { text: string };
+  'voice:processing': {};
+  'voice:move': { san: string; originalTranscript: string; confidence: number };
+  'voice:error': { error: string };
+  'voice:complete': {};
 }
 
 export class GameBus {

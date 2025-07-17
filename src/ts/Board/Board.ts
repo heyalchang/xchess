@@ -256,13 +256,32 @@ export default class Board {
 
     private emitCurrentState(): void {
         const currentTurn = player.isMyTurn() ? 'white' : 'black';
-        this.gameBus.emitState(
-            this.chessEngine.getFen(),
-            currentTurn,
-            this.chessEngine.getHistory().length,
-            this.chessEngine.isCheck(),
-            this.chessEngine.isGameOver()
-        );
+        const history = this.chessEngine.getHistory();
+        const legalMoves = this.chessEngine.getPossibleMoves();
+        
+        this.gameBus.emit('state', {
+            fen: this.chessEngine.getFen(),
+            turn: currentTurn,
+            moveCount: history.length,
+            inCheck: this.chessEngine.isCheck(),
+            gameOver: this.chessEngine.isGameOver(),
+            legalMoves,
+            lastMove: history.length > 0 ? history[history.length - 1] : undefined
+        });
+        
+        // Emit specific game state events
+        if (this.chessEngine.isCheck()) {
+            this.gameBus.emit('check', {});
+        }
+        
+        if (this.chessEngine.isCheckmate()) {
+            const winner = currentTurn === 'white' ? 'black' : 'white';
+            this.gameBus.emit('checkmate', { winner });
+        }
+        
+        if (this.chessEngine.isStalemate()) {
+            this.gameBus.emit('stalemate', {});
+        }
     }
 
     public getCurrentGameState(): any {

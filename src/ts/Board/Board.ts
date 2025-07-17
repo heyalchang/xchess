@@ -15,6 +15,7 @@ import {
 } from '../App';
 import { ChessEngine } from '../ChessEngine';
 import { BoardAdapter } from '../BoardAdapter';
+import { GameBus } from '../Utils/GameBus';
 
 export default class Board {
     public pieces: Piece[][] = [[]];
@@ -27,6 +28,7 @@ export default class Board {
 
     public selectedPiece: Piece = null;
     public chessEngine: ChessEngine;
+    private gameBus: GameBus;
 
     public pieceMap = [
         ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
@@ -41,7 +43,9 @@ export default class Board {
 
     constructor() {
         this.chessEngine = new ChessEngine();
+        this.gameBus = GameBus.getInstance();
         this.drawBoard();
+        this.setupEventListeners();
     }
 
     public drawBoard(): void {
@@ -145,6 +149,17 @@ export default class Board {
         this.syncWithChessEngine();
         debugText.setText(this.pieceMap);
         gameHistory.saveInteraction(this.pieceMap);
+        
+        // Emit move event through GameBus
+        this.gameBus.emitMove(
+            move.san,
+            this.chessEngine.getFen(),
+            fromSquare,
+            toSquare
+        );
+        
+        // Emit state change
+        this.emitCurrentState();
     }
 
     public setCurrentTile(current: Tile): Tile {
@@ -225,6 +240,43 @@ export default class Board {
         const currentTurn = player.isMyTurn() ? 'w' : 'b';
         const fen = BoardAdapter.buildFullFen(this.pieceMap, currentTurn);
         this.chessEngine.loadFen(fen);
+    }
+
+    private setupEventListeners(): void {
+        // Listen for external move events
+        this.gameBus.onMove((data) => {
+            // Handle external moves (e.g., from other players or AI)
+            console.log('External move received:', data);
+        });
+        
+        this.gameBus.onTurn((data) => {
+            console.log('Turn changed to:', data.player);
+        });
+    }
+
+    private emitCurrentState(): void {
+        const currentTurn = player.isMyTurn() ? 'white' : 'black';
+        this.gameBus.emitState(
+            this.chessEngine.getFen(),
+            currentTurn,
+            this.chessEngine.getHistory().length,
+            this.chessEngine.isCheck(),
+            this.chessEngine.isGameOver()
+        );
+    }
+
+    public getCurrentGameState(): any {
+        const currentTurn = player.isMyTurn() ? 'white' : 'black';
+        return {
+            fen: this.chessEngine.getFen(),
+            turn: currentTurn,
+            moveCount: this.chessEngine.getHistory().length,
+            inCheck: this.chessEngine.isCheck(),
+            gameOver: this.chessEngine.isGameOver(),
+            isStalemate: this.chessEngine.isStalemate(),
+            lastMove: this.chessEngine.getHistory().slice(-1)[0] || null,
+            timestamp: Date.now()
+        };
     }
 
     public clearPreviousPossibleMoves(newPossibleMoves: Tile[]) {
